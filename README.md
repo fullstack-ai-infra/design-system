@@ -16,8 +16,8 @@ which supersedes ADR 0001's retired "Warm Agent Workspace" direction.
 
 ## What ships
 
-- Light and dark semantic tokens (W3C-format `tokens/design-tokens.json` single source, CSS
-  generated via `npm run tokens:generate`) plus reduced-motion behavior.
+- Profile-aware light and dark semantic tokens (W3C-format `tokens/design-tokens.json` single
+  source, CSS generated via `npm run tokens:generate`) plus reduced-motion behavior.
 - A Tailwind preset mapped to the same semantic contract.
 - `DSProvider`, the theming provider that wires antd's `ConfigProvider` to the design tokens.
 - Button, Input, Card, Badge, Dialog, DropdownMenu, Tooltip, and Skeleton primitives.
@@ -102,8 +102,25 @@ explicit value exists, the operating-system preference is used.
 <html data-theme="light"></html>
 ```
 
+`default` is the Ant Design-aligned profile. The package also ships `mint`, a compact workbench
+profile. Let the application persist the user's profile and mode preference, stamp the profile on
+the document root, and pass both values to the provider. This keeps CSS variables and portaled AntD
+surfaces synchronized:
+
+```tsx
+import { DSProvider, type DSThemeProfile } from '@fullstack-ai-infra/ui';
+
+const profile: DSThemeProfile = 'mint';
+document.documentElement.dataset.uiTheme = profile;
+
+<DSProvider profile={profile} mode="dark">
+  {children}
+</DSProvider>;
+```
+
 Theme through `DSProvider` and the design-system tokens only; do not override antd tokens ad hoc
-in consumer applications (ADR 0002).
+in consumer applications (ADR 0002). A consumer may label a profile for its own product, but its
+business data and product-specific composite components remain outside this package.
 
 ## Tailwind consumption
 

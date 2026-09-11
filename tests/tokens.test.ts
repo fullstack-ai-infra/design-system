@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import preset from '../src/tailwind-preset';
+import tokensSource from '../tokens/design-tokens.json';
 
 const tokens = fs.readFileSync(path.resolve('src/styles/tokens.css'), 'utf8');
 
@@ -59,7 +60,13 @@ describe('semantic token contract', () => {
     expect(tokens).toContain('--ui-primary: #1677ff');
     expect(tokens).toContain('--ui-ai: #722ed1');
     expect(tokens).toContain('--ui-foreground: rgba(0, 0, 0, 0.88)');
-    expect(tokens.match(/--ui-canvas:/g)).toHaveLength(3);
+    const profileCount = Object.keys(
+      (tokensSource as { profiles?: Record<string, unknown> }).profiles ?? {},
+    ).length;
+    expect(tokens.match(/--ui-canvas:/g)).toHaveLength(3 * (profileCount + 1));
+    expect(tokens).toContain("[data-ui-theme='mint'][data-theme='light']");
+    expect(tokens).toContain('--ui-primary: #0a6b4e');
+    expect(tokens).toContain('--ui-primary: #19d89b');
   });
 
   it('turns off design-system motion when the user requests reduced motion', () => {

@@ -1,73 +1,73 @@
 /* eslint-disable react-refresh/only-export-components */
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, theme, type ConfigProviderProps } from 'antd';
 import { createContext, useContext, type ReactNode } from 'react';
 
-export type DSMode = 'light' | 'dark';
+import { getDSAiTokens, getDSSeedTokens, type DSMode, type DSThemeProfile } from './theme-profiles';
 
-// Seed values must stay identical to tokens/design-tokens.json; the guard
-// lives in tests/ds-provider.test.tsx.
+export type { DSMode, DSThemeProfile } from './theme-profiles';
+export {
+  dsThemeProfiles,
+  getDSAiTokens,
+  getDSSeedTokens,
+  getDSThemeToken,
+  isDSThemeProfile,
+} from './theme-profiles';
+
+/** Backwards-compatible default-profile views. New consumers should call the
+ * profile-aware getters above. */
 export const dsSeedTokens: Record<DSMode, Record<string, string | number>> = {
-  light: {
-    colorPrimary: '#1677ff',
-    colorInfo: '#1677ff',
-    colorLink: '#1677ff',
-    colorSuccess: '#52c41a',
-    colorWarning: '#faad14',
-    colorError: '#ff4d4f',
-    borderRadius: 6,
-    fontSize: 14,
-  },
-  dark: {
-    colorPrimary: '#1668dc',
-    colorInfo: '#1668dc',
-    colorLink: '#1668dc',
-    colorSuccess: '#49aa19',
-    colorWarning: '#d89614',
-    colorError: '#dc4446',
-    borderRadius: 6,
-    fontSize: 14,
-  },
+  light: getDSSeedTokens('default', 'light'),
+  dark: getDSSeedTokens('default', 'dark'),
 };
 
-// Purple is reserved for AI affordances (ADR 0002). Applied through a nested
-// ConfigProvider by the `ai` button variant.
 export const dsAiTokens: Record<DSMode, Record<string, string>> = {
-  light: {
-    colorPrimary: '#722ed1',
-    colorPrimaryHover: '#9254de',
-    colorPrimaryActive: '#531dab',
-  },
-  dark: {
-    colorPrimary: '#642ab5',
-    colorPrimaryHover: '#854eca',
-    colorPrimaryActive: '#854eca',
-  },
+  light: getDSAiTokens('default', 'light'),
+  dark: getDSAiTokens('default', 'dark'),
 };
 
-const DSModeContext = createContext<DSMode>('light');
+type DSThemeContextValue = { mode: DSMode; profile: DSThemeProfile };
+
+const DSThemeContext = createContext<DSThemeContextValue>({ mode: 'light', profile: 'default' });
 
 export function useDSMode(): DSMode {
-  return useContext(DSModeContext);
+  return useContext(DSThemeContext).mode;
+}
+
+export function useDSThemeProfile(): DSThemeProfile {
+  return useContext(DSThemeContext).profile;
 }
 
 export interface DSProviderProps {
   /** Antd algorithm switch. CSS variables follow `data-theme` separately. */
   mode?: DSMode;
+  /** A profile from tokens/design-tokens.json. The consumer controls the
+   * matching `data-ui-theme` attribute for CSS and persistence. */
+  profile?: DSThemeProfile;
+  locale?: ConfigProviderProps['locale'];
+  button?: ConfigProviderProps['button'];
   children: ReactNode;
 }
 
-export function DSProvider({ mode = 'light', children }: DSProviderProps) {
+export function DSProvider({
+  mode = 'light',
+  profile = 'default',
+  locale,
+  button,
+  children,
+}: DSProviderProps) {
   return (
-    <DSModeContext.Provider value={mode}>
+    <DSThemeContext.Provider value={{ mode, profile }}>
       <ConfigProvider
+        locale={locale}
+        button={button}
         theme={{
           hashed: true,
           algorithm: mode === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
-          token: dsSeedTokens[mode],
+          token: getDSSeedTokens(profile, mode),
         }}
       >
         {children}
       </ConfigProvider>
-    </DSModeContext.Provider>
+    </DSThemeContext.Provider>
   );
 }

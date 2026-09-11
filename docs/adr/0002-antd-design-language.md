@@ -25,13 +25,18 @@ as the `antd` component library (ruling option b). Specifically:
 
 ### Theme contract
 
-- Light is the default theme; dark is available and switchable at the provider level
+- Light is the default mode; dark is available and switchable at the provider level
   (antd `ConfigProvider` `algorithm`: `defaultAlgorithm` / `darkAlgorithm`).
-- Token values come from the Ant Design official light and dark palettes. Bespoke palette values
-  from direction C (warm ivory, stone, sage, lavender anchors) are retired.
-- `tokens/design-tokens.json` keeps the W3C Design Tokens format and becomes the single token
-  source, versioned as v3 with both light and dark sets. It feeds both the React theme
-  (`ConfigProvider` `theme.token`) and the generated CSS variables (`tokens.css`).
+- `default` remains the Ant Design-aligned profile. Additional profiles may be added only to
+  support a real consumer requirement, remain product-neutral by name, and provide both light and
+  dark values. The initial additional profile is `mint`, a compact high-contrast workbench palette.
+- `tokens/design-tokens.json` keeps the W3C Design Tokens format and is the single token source:
+  base tokens establish the default profile; a profile may override semantic token values there.
+  The same source feeds generated CSS variables (`tokens.css`) and the profile-aware React theme
+  (`DSProvider` → AntD `ConfigProvider` `theme.token`).
+- Consumers select a profile with `DSProvider profile` and stamp the matching `data-ui-theme` value
+  on the document root. They must not duplicate palette values in application CSS or a second AntD
+  seed object.
 - Erratum (2026-08-25, CEO ruling): the facade aligns to the antd major already running on the
   org-workbench production line — currently antd@6. Dual majors are rejected; a major bump needs a
   new ruling.
@@ -42,7 +47,8 @@ as the `antd` component library (ruling option b). Specifically:
   `@fullstack-ai-infra/ui` export surface as a facade over antd versus exporting antd directly)
   is an implementation decision tracked in issue #7 and recorded in the migration PR.
 - Semantic roles survive the migration: AI affordances, source/health states, and human-action
-  accents remain distinct meanings, now mapped onto antd tokens rather than C-direction hex values.
+  accents remain distinct meanings. Components consume semantic token names, never profile hex
+  values.
 - Accessibility, keyboard navigation, reduced motion, and dark theme remain required behavior,
   unchanged from ADR 0001.
 
@@ -58,7 +64,7 @@ in consumer repositories; React and React DOM remain peer dependencies; business
 not recreate primitives.
 
 New: consumers must theme through the design-system provider and tokens, not by overriding antd
-tokens ad hoc.
+tokens ad hoc. User preference persistence and product-facing profile labels remain in consumers.
 
 ## Consequences
 

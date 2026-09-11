@@ -9,7 +9,7 @@ import {
 } from 'react';
 
 import { cn } from '../lib';
-import { dsAiTokens, useDSMode } from '../ds-provider';
+import { getDSAiTokens, useDSMode, useDSThemeProfile } from '../ds-provider';
 
 // Kept for consumers that compose class names directly; the facade itself
 // renders antd buttons (ADR 0002).
@@ -71,6 +71,7 @@ export interface ButtonProps extends VariantProps<typeof buttonVariants> {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, type = 'button', ...props }, ref) => {
     const mode = useDSMode();
+    const profile = useDSThemeProfile();
     const button = (
       <AntButton
         ref={ref}
@@ -85,7 +86,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     if (variant === 'ai') {
       return (
-        <ConfigProvider theme={{ hashed: true, token: { ...dsAiTokens[mode] } }}>
+        <ConfigProvider theme={{ hashed: true, token: getDSAiTokens(profile, mode) }}>
           {button}
         </ConfigProvider>
       );
