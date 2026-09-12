@@ -5,10 +5,17 @@ export { cn } from './lib';
 export {
   DSProvider,
   dsAiTokens,
+  dsThemeProfiles,
   dsSeedTokens,
+  getDSAiTokens,
+  getDSSeedTokens,
+  getDSThemeToken,
+  isDSThemeProfile,
   useDSMode,
+  useDSThemeProfile,
   type DSMode,
   type DSProviderProps,
+  type DSThemeProfile,
 } from './ds-provider';
 export { Badge, type BadgeProps } from './components/badge';
 export { Button, buttonVariants, type ButtonProps } from './components/button';

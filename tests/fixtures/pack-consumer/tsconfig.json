@@ -3,7 +3,12 @@
     "target": "ES2022",
     "lib": ["ES2022", "DOM"],
     "strict": true,
-    "skipLibCheck": false,
+    // Ant Design 6 currently exposes React-19-only declarations while its
+    // supported peer range still includes React 18. This fixture models the
+    // supported React 18 consumer and verifies this package's declaration and
+    // runtime contract, rather than type-checking that transitive declaration
+    // graph as if it were owned by this package.
+    "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",

@@ -16,6 +16,8 @@ for (const [group, tokens] of Object.entries(groups)) {
   }
 }
 
+const profiles = json.profiles ?? {};
+
 function valueFor(value, mode) {
   if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
     return value[mode] ?? value.light;
@@ -23,13 +25,18 @@ function valueFor(value, mode) {
   return value;
 }
 
-function renderBlock(mode, indent) {
+function tokenFor(profile, group, name, token) {
+  return profile?.tokens?.[group]?.[name] ?? token;
+}
+
+function renderBlock(mode, indent, profile) {
   const lines = [];
   if (mode === 'light') lines.push(`${indent}color-scheme: light;`);
   if (mode === 'dark') lines.push(`${indent}color-scheme: dark;`);
   lines.push('');
-  for (const { name, token } of entries) {
-    lines.push(`${indent}--ui-${name}: ${valueFor(token.$value, mode)};`);
+  for (const { group, name, token } of entries) {
+    const profileToken = tokenFor(profile, group, name, token);
+    lines.push(`${indent}--ui-${name}: ${valueFor(profileToken.$value, mode)};`);
   }
   return lines.join('\n');
 }
@@ -51,6 +58,25 @@ ${renderBlock('dark', '    ')}
   }
 }
 `;
+
+function renderProfile(profileName, profile) {
+  const light = `:root[data-ui-theme='${profileName}']:not([data-theme]),
+[data-ui-theme='${profileName}'][data-theme='light'] {
+${renderBlock('light', '  ', profile)}
+}
+`;
+  const dark = `[data-ui-theme='${profileName}'][data-theme='dark'] {
+${renderBlock('dark', '  ', profile)}
+}
+`;
+  const systemDark = `@media (prefers-color-scheme: dark) {
+  :root[data-ui-theme='${profileName}']:not([data-theme]) {
+${renderBlock('dark', '    ', profile)}
+  }
+}
+`;
+  return `${light}\n${dark}\n${systemDark}`;
+}
 
 const reducedMotionBlock = `@media (prefers-reduced-motion: reduce) {
   :root {
@@ -74,9 +100,14 @@ const header = `/* Generated from tokens/design-tokens.json by scripts/generate-
 
 `;
 
+const profileBlocks = Object.entries(profiles)
+  .map(([profileName, profile]) => renderProfile(profileName, profile))
+  .join('\n');
+
 const css = `${header}${lightBlock}
 ${darkBlock}
 ${systemDarkBlock}
+${profileBlocks}
 ${reducedMotionBlock}`;
 
 const outPath = path.join(root, 'src', 'styles', 'tokens.css');

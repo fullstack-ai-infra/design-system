@@ -1,6 +1,14 @@
 import { render, screen } from '@testing-library/react';
 
-import { DSProvider, dsAiTokens, dsSeedTokens } from '../src';
+import {
+  DSProvider,
+  dsAiTokens,
+  dsSeedTokens,
+  dsThemeProfiles,
+  getDSAiTokens,
+  getDSSeedTokens,
+  getDSThemeToken,
+} from '../src';
 import tokens from '../tokens/design-tokens.json';
 
 type TokenEntry = { $value: { light: string; dark: string } | string };
@@ -34,6 +42,19 @@ describe('DSProvider', () => {
       expect(ai.colorPrimary).toBe(tokenValue(['color', 'ai'], mode));
       expect(ai.colorPrimaryHover).toBe(tokenValue(['color', 'ai-hover'], mode));
       expect(ai.colorPrimaryActive).toBe(tokenValue(['color', 'ai-strong'], mode));
+    }
+  });
+
+  it('derives the mint profile CSS and Antd values from the token source', () => {
+    expect(dsThemeProfiles).toContain('mint');
+
+    for (const mode of ['light', 'dark'] as const) {
+      const seed = getDSSeedTokens('mint', mode);
+      const ai = getDSAiTokens('mint', mode);
+      expect(seed.colorPrimary).toBe(getDSThemeToken('mint', mode, 'color', 'primary'));
+      expect(seed.colorSuccess).toBe(getDSThemeToken('mint', mode, 'color', 'success'));
+      expect(seed.colorError).toBe(getDSThemeToken('mint', mode, 'color', 'danger'));
+      expect(ai.colorPrimary).toBe(getDSThemeToken('mint', mode, 'color', 'ai'));
     }
   });
 
